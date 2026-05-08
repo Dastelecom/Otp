@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>InvoSmart OTP Test</title>
+
+  <style>
+
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+      font-family:Arial, sans-serif;
+    }
+
+    body{
+      background:#0f172a;
+      height:100vh;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      padding:20px;
+    }
+
+    .container{
+      width:100%;
+      max-width:400px;
+      background:#1e293b;
+      border-radius:20px;
+      padding:30px;
+      box-shadow:0 0 25px rgba(0,0,0,0.4);
+    }
+
+    h1{
+      color:white;
+      text-align:center;
+      margin-bottom:25px;
+      font-size:28px;
+    }
+
+    input{
+      width:100%;
+      padding:14px;
+      border:none;
+      border-radius:12px;
+      margin-top:12px;
+      font-size:16px;
+      outline:none;
+    }
+
+    button{
+      width:100%;
+      padding:14px;
+      border:none;
+      border-radius:12px;
+      background:#2563eb;
+      color:white;
+      font-size:16px;
+      cursor:pointer;
+      margin-top:15px;
+      transition:0.3s;
+    }
+
+    button:hover{
+      background:#1d4ed8;
+    }
+
+    #message{
+      color:white;
+      text-align:center;
+      margin-top:18px;
+      word-break:break-word;
+    }
+
+    #recaptcha-container{
+      margin-top:20px;
+      display:flex;
+      justify-content:center;
+    }
+
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <h1>OTP Test</h1>
+
+  <input
+    type="text"
+    id="phone"
+    placeholder="+91XXXXXXXXXX"
+  />
+
+  <button onclick="sendOTP()">
+    Send OTP
+  </button>
+
+  <input
+    type="text"
+    id="otp"
+    placeholder="Enter OTP"
+  />
+
+  <button onclick="verifyOTP()">
+    Verify OTP
+  </button>
+
+  <div id="recaptcha-container"></div>
+
+  <div id="message"></div>
+
+</div>
+
+<script type="module">
+
+import { initializeApp }
+
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {
+  getAuth,
+  RecaptchaVerifier,
+  signInWithPhoneNumber
+}
+
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+
+const firebaseConfig = {
+
+  apiKey: "AIzaSyBjMeVZCPevauTsk7CIN8B4wusq8zOeNWE",
+
+  authDomain: "invosmart-2026.firebaseapp.com",
+
+  projectId: "invosmart-2026",
+
+  storageBucket: "invosmart-2026.firebasestorage.app",
+
+  messagingSenderId: "257834559059",
+
+  appId: "1:257834559059:web:4555c0d2bfbd279f2c88a6",
+
+  measurementId: "G-DRTSNN1E82"
+
+};
+
+
+const app = initializeApp(firebaseConfig);
+
+const auth = getAuth(app);
+
+
+window.recaptchaVerifier = new RecaptchaVerifier(
+
+  auth,
+
+  "recaptcha-container",
+
+  {
+    size: "normal",
+
+    callback: () => {
+
+      console.log("reCAPTCHA solved");
+
+    }
+
+  }
+
+);
+
+
+window.sendOTP = async function(){
+
+  const phoneNumber =
+    document.getElementById("phone").value;
+
+  const appVerifier =
+    window.recaptchaVerifier;
+
+  const message =
+    document.getElementById("message");
+
+  message.innerHTML = "Sending OTP...";
+
+  try{
+
+    const confirmationResult =
+      await signInWithPhoneNumber(
+        auth,
+        phoneNumber,
+        appVerifier
+      );
+
+    window.confirmationResult =
+      confirmationResult;
+
+    message.innerHTML =
+      "OTP Sent Successfully";
+
+  }
+
+  catch(error){
+
+    console.error(error);
+
+    message.innerHTML =
+      error.message;
+
+  }
+
+}
+
+
+window.verifyOTP = async function(){
+
+  const code =
+    document.getElementById("otp").value;
+
+  const message =
+    document.getElementById("message");
+
+  try{
+
+    const result =
+      await window.confirmationResult.confirm(code);
+
+    const user = result.user;
+
+    message.innerHTML =
+      "Login Success : " + user.phoneNumber;
+
+  }
+
+  catch(error){
+
+    console.error(error);
+
+    message.innerHTML =
+      "Invalid OTP";
+
+  }
+
+}
+
+</script>
+
+</body>
+</html>
